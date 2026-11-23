@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+# outputs of the examples and of user runs
+*.vts
+*.vtu
+*_coils.json
+coils.*
+results/
+runs/
+xcoil/surface/data/user/

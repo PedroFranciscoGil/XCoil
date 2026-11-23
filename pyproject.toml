@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xcoil"
+version = "2.0.0"
+description = "GPU coil optimization for stellarators: certified filament coils for a fixed plasma boundary, one device-resident JAX program"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Pedro Francisco Gil" }, { name = "Alan A. Kaptanoglu" }]
+keywords = ["stellarator", "coils", "optimization", "jax", "gpu", "fusion"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = ["jax>=0.4.30", "numpy", "scipy"]
+
+[project.optional-dependencies]
+cuda = ["jax[cuda12]>=0.4.30"]
+simsopt = ["simsopt"]          # read simsopt JSON surfaces, write simsopt BiotSavart files, cross-check tests
+netcdf = ["netCDF4"]           # netCDF4 wout files (netCDF3 is read with scipy)
+test = ["pytest"]
+
+[project.scripts]
+xcoil-coils = "xcoil.cli:main"
+xcoil-check = "xcoil.check:main"
+
+[project.urls]
+Repository = "https://github.com/PedroFranciscoGil/XCoil"
+
+[tool.setuptools.packages.find]
+include = ["xcoil*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.npz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: minutes on a laptop CPU", "bigmem: needs more than 4 GB of RAM (dense autodiff Jacobians of production-size problems); CI skips it"]

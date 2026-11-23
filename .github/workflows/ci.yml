@@ -1,0 +1,32 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    env:
+      JAX_PLATFORMS: cpu
+      XCOIL_COMPILE_CACHE: "off"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install ".[test]"
+      - run: cd /tmp && python -c "import xcoil, xcoil.fixed.device_lm, xcoil.verify.certify"
+      # one process per test file: JAX keeps compiled programs and module fixtures alive, so a single process
+      # grows to ~8 GB over the suite (runners have 7 GB); per file the peak is below 5.5 GB
+      - name: tests (one process per file)
+        run: |
+          fail=0
+          for f in tests/test_*.py; do
+            echo "::group::$f"
+            rc=0; pytest -q -m "not slow and not bigmem" "$f" || rc=$?
+            echo "::endgroup::"
+            if [ $rc -ne 0 ] && [ $rc -ne 5 ]; then echo "FAILED: $f"; fail=1; fi
+          done
+          exit $fail
